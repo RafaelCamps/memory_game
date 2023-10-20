@@ -28,7 +28,34 @@
 
     let grid = createGrid()
 
-    console.log(grid)
+    const selectCard = (cardIndex: number) => {
+        selected = [...selected, cardIndex]
+    }
+
+    const matchCards = () => {
+        const [firstCard, secondCard] = selected
+        if(grid[firstCard] === grid[secondCard]){
+            matches = [...matches, grid[firstCard]]
+        }
+        setTimeout(() => {
+            selected = []
+        }, 500);
+        
+    }
+
+    const gameWon = () => {
+        state = 'won'
+        matches = []
+    }
+
+
+    $: selected.length === 2 && matchCards()
+    $: maxMatches === matches.length && gameWon()
+
+
+
+
+    $: console.log(state, selected, matches)
 
 </script>
 
@@ -54,14 +81,23 @@
         </div>
 
     {:else if state === 'playing'}
-        <div class="flex gap-x-3 justify-center py-3">
+        <div class="flex gap-x-3 justify-center py-2">
             <IconBrain size={32} class={'text-pink-300'} />
-            <h1 class="text-2xl text-green-500">Memory Game</h1>
+            <h1 class="text-3xl text-green-500">Memory Game</h1>
         </div>
-        <div class="h-[85vh] bg-slate-500 rounded-xl mx-24 grid grid-cols-6 gap-2 py-2 px-12 place-content-center">
-            {#each grid as card, cardId}
-                <button class="bg-slate-100 text-5xl w-32 h-32 rounded-xl">
-                    {card}
+        <div class="h-[85vh] bg-green-600 rounded-xl mx-24 grid grid-cols-6 gap-2 py-2 px-12 place-content-center">
+            {#each grid as card, cardIndex}
+                {@const isSelected = selected.includes(cardIndex)}
+                {@const isSelectedOrMatched = selected.includes(cardIndex) || matches.includes(card)}
+                {@const isMatched = matches.includes(card)}
+                <button class="bg-slate-100 text-3xl lg:text-5xl w-32 h-32 rounded-xl"
+                    class:selected={isSelected} disabled={isSelectedOrMatched}
+                    on:click={() => selectCard(cardIndex)}>
+                    {#if isSelected || isMatched}
+                    <span class:match={isMatched}>
+                        {card}
+                    </span>
+                    {/if}
                 </button>
             {/each}
         </div>
@@ -90,4 +126,13 @@
     </footer>
 </main>
 
-
+<style>
+    .selected{
+        border: 2px solid red;
+        /* @apply('border-green-400'); */
+    }
+    .match{
+        transition: opacity 0.3s ease-out;
+        opacity: 0.4;
+    }
+</style>
